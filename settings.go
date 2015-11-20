@@ -9,7 +9,7 @@ import (
 type Settings struct {
 	File     string
 	Settings map[string]string
-	loaded   bool
+	Loaded   bool
 }
 
 //load settings from file
@@ -30,14 +30,17 @@ func (s *Settings) Load() (map[string]string, error) {
 			}
 		}
 	}
+	if len(settings) == 0 {
+		return settings, errors.New("No settings found in: " + s.File)
+	}
 	s.Settings = settings
-	s.loaded = true
+	s.Loaded = true
 	return settings, nil
 }
 
 //get a setting
 func (s *Settings) Get(setting string) (string, error) {
-	if s.loaded == false {
+	if s.Loaded == false {
 		_, err := s.Load()
 		if err != nil {
 			return "", err
@@ -49,6 +52,10 @@ func (s *Settings) Get(setting string) (string, error) {
 		return ret, nil
 	}
 	return "", errors.New("Setting " + setting + " doesn't exist") //for backwards compatibility (..doesn't end with return statement)
+}
+func (s *Settings) Set(key, value string) error {
+	s.Settings[key] = value
+	return nil
 }
 
 //read file into string
@@ -64,7 +71,7 @@ func readFile(path string) (string, error) {
 func GetSettings(filename string) (Settings, error) {
 	s := Settings{
 		File:   filename,
-		loaded: false,
+		Loaded: false,
 	}
 	_, err := s.Load()
 	if err != nil {
