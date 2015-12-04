@@ -17,7 +17,7 @@ func (s *Settings) Load() (map[string]string, error) {
 	settings := map[string]string{}
 	str, err := readFile(s.File)
 	if err != nil {
-		return settings, errors.New("Settings file does not exist: " + s.File)
+		return settings, errors.New("Can't read settings file: " + s.File)
 	}
 	lines := strings.Split(str, "\n")
 	if len(lines) > 0 {
