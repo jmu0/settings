@@ -6,13 +6,14 @@ import (
 	"strings"
 )
 
+//Settings struct
 type Settings struct {
 	File     string
 	Settings map[string]string
 	Loaded   bool
 }
 
-//load settings from file
+//Load settings from file
 func (s *Settings) Load() (map[string]string, error) {
 	settings := map[string]string{}
 	str, err := readFile(s.File)
@@ -38,7 +39,7 @@ func (s *Settings) Load() (map[string]string, error) {
 	return settings, nil
 }
 
-//get a setting
+//Get get a setting
 func (s *Settings) Get(setting string) (string, error) {
 	if s.Loaded == false {
 		_, err := s.Load()
@@ -46,19 +47,21 @@ func (s *Settings) Get(setting string) (string, error) {
 			return "", err
 		}
 	}
-	if ret, ok := s.Settings[setting]; !ok {
+	ret, ok := s.Settings[setting]
+	if !ok {
 		return ret, errors.New("Setting " + setting + " doesn't exist")
-	} else {
-		return ret, nil
 	}
-	return "", errors.New("Setting " + setting + " doesn't exist") //for backwards compatibility (..doesn't end with return statement)
+	return ret, nil
+	//return "", errors.New("Setting " + setting + " doesn't exist") //for backwards compatibility (..doesn't end with return statement)
 }
+
+//Set a setting
 func (s *Settings) Set(key, value string) error {
 	s.Settings[key] = value
 	return nil
 }
 
-//read file into string
+//readFile read file into string
 func readFile(path string) (string, error) {
 	cont, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -67,7 +70,7 @@ func readFile(path string) (string, error) {
 	return string(cont), nil
 }
 
-//return settings
+//GetSettings return settings
 func GetSettings(filename string) (Settings, error) {
 	s := Settings{
 		File:   filename,
