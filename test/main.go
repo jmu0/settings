@@ -11,23 +11,23 @@ type fout struct {
 }
 
 type test struct {
-	Een  string      `json:"een"`
-	Twee int         `json:"twee"`
-	Drie interface{} `json:"drie"`
+	Een  string `json:"een"`
+	Twee int    `json:"twee"`
+	Drie bool   `json:"drie"`
 }
 
 func main() {
-	v := test{
-		Een: "test",
-	}
+	v := test{}
 	err := settings.Load("testfile.conf", &v)
-	//json.Unmarshal([]byte("{\"een\":\"eerste\"}"), &v)
-	fmt.Println("struct:", v)
-	// fmt.Println()
-	// s := map[string]string{"twee": "3"}
-	// err := settings.Load("testfile.conf", &s)
 	if err != nil {
 		fmt.Println("ERROR:", err)
 	}
-	// fmt.Println("map:", s)
+	fmt.Println("struct:", v)
+	fmt.Println()
+	s := map[string]string{}
+	err = settings.Load("testfile.conf", &s)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+	}
+	fmt.Println("map:", s)
 }

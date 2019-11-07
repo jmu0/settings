@@ -85,12 +85,47 @@ func loadConf(file string, s interface{}) error {
 }
 
 func loadEnvironmentVariables(s interface{}) error {
-	//TODO load env
+	var prg, key, value string
+	var spl []string
+	var err error
+	prg = os.Args[0]
+	prg = strings.Split(prg, "/")[len(strings.Split(prg, "/"))-1]
+	for _, v := range os.Environ() {
+		// fmt.Println(v[:len(prg)])
+		if len(v) > len(prg) && v[:len(prg)] == strings.ToUpper(prg) {
+			spl = strings.Split(v, "=")
+			if len(spl) > 1 {
+				key = strings.ToLower(strings.Replace(spl[0], strings.ToUpper(prg)+"_", "", 1))
+				value = strings.Join(spl[1:], "=")
+				err = set(key, value, s)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 
 func loadCommandLineArgs(s interface{}) error {
 	//TODO: load args
+	var spl []string
+	var key, value string
+	var err error
+	for _, e := range os.Args[1:] {
+		if e[:2] == "--" {
+			e = e[2:]
+			spl = strings.Split(e, "=")
+			if len(spl) > 1 {
+				key = strings.ToLower(spl[0])
+				value = strings.Join(spl[1:], "=")
+				err = set(key, value, s)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 
