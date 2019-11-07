@@ -20,7 +20,7 @@ func main() {
 	// var str string
 	// fmt.Println(settings.Load("testfile.conf", &str))
 	fmt.Println()
-	s := map[string]string{}
+	s := map[string]string{"twee": "drie"}
 	settings.Load("testfile.conf", &s)
 	fmt.Println("map:", s)
 }

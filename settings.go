@@ -15,6 +15,8 @@ func Load(file string, s interface{}) error {
 	var err error
 	if reflect.ValueOf(s).Type().Kind() != reflect.Ptr {
 		return errors.New("Target is not a pointer")
+	} else if s == nil {
+		return errors.New("Target is nil")
 	}
 	testReflect(s)
 
@@ -100,8 +102,17 @@ func testReflect(s interface{}) error {
 		if fld.IsValid() {
 			fld.SetString("Aangepast!!")
 		}
+		var i int
+		for i = 0; i < str.NumField(); i++ {
+			fmt.Println("Field:", str.Type().Field(i).Name, "=", str.FieldByName(str.Type().Field(i).Name).String())
+		}
 	case reflect.Map:
 		fmt.Println("I am a Map")
+		// v := reflect.ValueOf(s)
+		t := reflect.TypeOf(s).Elem().Key()
+		v := reflect.TypeOf(s).Elem().Elem()
+
+		fmt.Println("map key type:", t, "value type:", v)
 	default:
 		return errors.New("Invalid target")
 	}
