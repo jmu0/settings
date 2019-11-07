@@ -2,11 +2,11 @@ package settings
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -18,8 +18,6 @@ func Load(file string, s interface{}) error {
 	} else if s == nil {
 		return errors.New("Target is nil")
 	}
-	testReflect(s)
-
 	if file != "" {
 		_, err = os.Stat(file)
 		if !os.IsNotExist(err) {
@@ -60,9 +58,10 @@ func loadYaml(file string, settings interface{}) error {
 	return nil
 }
 
-func loadConf(file string, settings interface{}) error {
-	set := map[string]string{}
-	str, err := readFile(file)
+func loadConf(file string, s interface{}) error {
+	var err error
+	var str string
+	str, err = readFile(file)
 	if err != nil {
 		return err
 	}
@@ -72,74 +71,95 @@ func loadConf(file string, settings interface{}) error {
 			if len(line) > 0 && line[:1] != "#" {
 				fields := strings.Fields(line)
 				if len(fields) > 1 {
-					set[fields[0]] = strings.Join(fields[1:], " ")
+					err = set(fields[0], strings.Join(fields[1:], " "), s)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
-	}
-	if len(set) == 0 {
+	} else {
 		return errors.New("No settings found in: " + file)
 	}
-	fmt.Println(set)
-	settings = &set
 	return nil
 }
 
 func loadEnvironmentVariables(s interface{}) error {
+	//TODO load env
 	return nil
 }
 
 func loadCommandLineArgs(s interface{}) error {
+	//TODO: load args
 	return nil
 }
 
-func testReflect(s interface{}) error {
+func set(key, value string, s interface{}) error {
+	//TODO: handle more types
 	switch reflect.ValueOf(s).Elem().Type().Kind() {
 	case reflect.Struct:
-		fmt.Println("I am a struct")
-		str := reflect.ValueOf(s).Elem()
-		fld := str.FieldByName("Een")
-		if fld.IsValid() {
-			fld.SetString("Aangepast!!")
-		}
+		st := reflect.TypeOf(s).Elem()
 		var i int
-		for i = 0; i < str.NumField(); i++ {
-			fmt.Println("Field:", str.Type().Field(i).Name, "=", str.FieldByName(str.Type().Field(i).Name).String())
+		for i = 0; i < st.NumField(); i++ {
+			if st.Field(i).Name == key || st.Field(i).Tag.Get("json") == key {
+				fld := reflect.ValueOf(s).Elem().FieldByName(st.Field(i).Name)
+				if fld.IsValid() {
+					if fld.Kind() == reflect.String {
+						fld.SetString(value)
+					} else if fld.Kind() == reflect.Interface {
+						fld.Set(reflect.ValueOf(value))
+					} else if fld.Kind() == reflect.Int {
+						intVal, err := strconv.ParseInt(value, 10, 64)
+						if err != nil {
+							return errors.New("Invalid int value: " + value)
+						}
+						fld.SetInt(intVal)
+					} else if fld.Kind() == reflect.Bool {
+						boolVal, err := strconv.ParseBool(value)
+						if err != nil {
+							return errors.New("Invalid bool value: " + value)
+						}
+						fld.SetBool(boolVal)
+					} else {
+						return errors.New("Target struct has invalid field type: " + fld.Kind().String())
+					}
+					return nil
+				}
+			}
 		}
+		return nil
 	case reflect.Map:
-		fmt.Println("I am a Map")
-		// v := reflect.ValueOf(s)
-		t := reflect.TypeOf(s).Elem().Key()
-		v := reflect.TypeOf(s).Elem().Elem()
-
-		fmt.Println("map key type:", t, "value type:", v)
-	default:
-		return errors.New("Invalid target")
+		keyType := reflect.TypeOf(s).Elem().Key()
+		valueType := reflect.TypeOf(s).Elem().Elem()
+		if keyType.Kind() == reflect.Int {
+			if valueType.Kind() == reflect.String || valueType.Kind() == reflect.Interface {
+				intKey, err := strconv.Atoi(key)
+				if err != nil {
+					intKey = 0
+				}
+				reflect.ValueOf(s).Elem().SetMapIndex(reflect.ValueOf(intKey), reflect.ValueOf(value))
+			} else {
+				return errors.New("Invalid value type")
+			}
+		} else if keyType.Kind() == reflect.String {
+			if valueType.Kind() == reflect.String || valueType.Kind() == reflect.Interface {
+				reflect.ValueOf(s).Elem().SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(value))
+			} else {
+				return errors.New("Invalid value type")
+			}
+		} else {
+			return errors.New("Invalid key type")
+		}
+		return nil
 	}
-	return nil
+	return errors.New("Invalid target")
 }
 
-//Get get a setting
-// func (s *Settings) Get(setting string) (string, error) {
-// 	if s.Loaded == false {
-// 		err := s.Load()
-// 		if err != nil {
-// 			return "", err
-// 		}
-// 	}
-// 	ret, ok := s.Settings[setting]
-// 	if !ok {
-// 		return ret, errors.New("Setting " + setting + " doesn't exist")
-// 	}
-// 	return ret, nil
-// 	//return "", errors.New("Setting " + setting + " doesn't exist") //for backwards compatibility (..doesn't end with return statement)
-// }
-
-//Set a setting
-// func (s *Settings) Set(key, value string) error {
-// 	s.Settings[key] = value
-// 	return nil
-// }
+//Get gets setting from file/env/args
+func Get(filename, key string, s interface{}) error {
+	//TODO: load settings and get key
+	return nil
+}
 
 //readFile read file into string
 func readFile(path string) (string, error) {
@@ -149,16 +169,3 @@ func readFile(path string) (string, error) {
 	}
 	return string(cont), nil
 }
-
-//GetSettings return settings
-// func GetSettings(filename string) (interface{}, error) {
-// 	s := Settings{
-// 		File:   filename,
-// 		Loaded: false,
-// 	}
-// 	err := s.Load()
-// 	if err != nil {
-// 		return s, err
-// 	}
-// 	return s, nil
-// }

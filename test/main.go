@@ -6,21 +6,28 @@ import (
 	"github.com/jmu0/settings"
 )
 
+type fout struct {
+	Fout bool
+}
+
 type test struct {
-	Een string `json:"een"`
+	Een  string      `json:"een"`
+	Twee int         `json:"twee"`
+	Drie interface{} `json:"drie"`
 }
 
 func main() {
 	v := test{
 		Een: "test",
 	}
-	settings.Load("testfile.conf", &v)
+	err := settings.Load("testfile.conf", &v)
 	//json.Unmarshal([]byte("{\"een\":\"eerste\"}"), &v)
 	fmt.Println("struct:", v)
-	// var str string
-	// fmt.Println(settings.Load("testfile.conf", &str))
-	fmt.Println()
-	s := map[string]string{"twee": "drie"}
-	settings.Load("testfile.conf", &s)
-	fmt.Println("map:", s)
+	// fmt.Println()
+	// s := map[string]string{"twee": "3"}
+	// err := settings.Load("testfile.conf", &s)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+	}
+	// fmt.Println("map:", s)
 }
