@@ -52,10 +52,10 @@ func Load(file string, s interface{}) error {
 }
 
 func loadJSON(file string, settings interface{}) error {
-	return nil
+	return errors.New("not implemented")
 }
 func loadYaml(file string, settings interface{}) error {
-	return nil
+	return errors.New("not implemented")
 }
 
 func loadConf(file string, s interface{}) error {
@@ -193,7 +193,7 @@ func set(key, value string, s interface{}) error {
 //Get gets setting from file/env/args
 func Get(filename, key string, s interface{}) error {
 	//TODO: load settings and get key
-	return nil
+	return errors.New("not implemented")
 }
 
 //readFile read file into string
