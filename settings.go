@@ -1,6 +1,7 @@
 package settings
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -8,6 +9,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 //Load settings from file
@@ -52,10 +55,26 @@ func Load(file string, s interface{}) error {
 }
 
 func loadJSON(file string, settings interface{}) error {
-	return errors.New("not implemented")
+	bytes, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(bytes, settings)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 func loadYaml(file string, settings interface{}) error {
-	return errors.New("not implemented")
+	yml, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	err = yaml.Unmarshal(yml, settings)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func loadConf(file string, s interface{}) error {
