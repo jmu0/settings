@@ -147,7 +147,6 @@ func loadCommandLineArgs(s interface{}) error {
 }
 
 func set(key, value string, s interface{}) error {
-	//TODO: handle more types
 	switch reflect.ValueOf(s).Elem().Type().Kind() {
 	case reflect.Struct:
 		st := reflect.TypeOf(s).Elem()
@@ -208,9 +207,39 @@ func set(key, value string, s interface{}) error {
 }
 
 //Get gets setting from file/env/args
-func Get(filename, key string, s interface{}) error {
-	//TODO: load settings and get key
-	return errors.New("not implemented")
+func Get(filename, key string, target interface{}) error {
+	if reflect.TypeOf(target).Kind() != reflect.Ptr {
+		return errors.New("Target is not a pointer")
+	}
+	s := make(map[string]interface{})
+	var err error
+	err = Load(filename, &s)
+	if err != nil {
+		return err
+	}
+	if val, ok := s[key]; ok {
+		if reflect.TypeOf(target).Elem().Kind() == reflect.Int {
+			if reflect.TypeOf(val).Kind() == reflect.Int {
+				reflect.ValueOf(target).Elem().Set(reflect.ValueOf(val))
+				return nil
+			} else if reflect.TypeOf(val).Kind() == reflect.String {
+				i, err := strconv.Atoi(val.(string))
+				if err != nil {
+					return err
+				}
+				reflect.ValueOf(target).Elem().Set(reflect.ValueOf(i))
+				return nil
+			} else {
+				return errors.New("Invalid value type: " + reflect.TypeOf(val).Elem().Kind().String())
+			}
+		} else if reflect.TypeOf(target).Elem().Kind() == reflect.String {
+			reflect.ValueOf(target).Elem().Set(reflect.ValueOf(val))
+			return nil
+		} else {
+			return errors.New("Invalid target type: " + reflect.TypeOf(target).Elem().Kind().String())
+		}
+	}
+	return errors.New("Setting " + key + " not found.")
 }
 
 //readFile read file into string

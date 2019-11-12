@@ -17,17 +17,34 @@ type test struct {
 }
 
 func main() {
-	v := test{}
-	err := settings.Load("testfile.json", &v)
+	var err error
+	// v := test{}
+	// err := settings.Load("testfile.json", &v)
+	// if err != nil {
+	// 	fmt.Println("ERROR json:", err)
+	// }
+	// fmt.Println("struct van json:", v)
+	// fmt.Println()
+	// s := map[string]string{}
+	// err = settings.Load("testfile.yml", &s)
+	// if err != nil {
+	// 	fmt.Println("ERROR yml:", err)
+	// }
+	// fmt.Println("map van yaml:", s)
+	var g string
+	err = settings.Get("testfile.conf", "een", &g)
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		fmt.Println("ERROR Get string:", err)
+	} else {
+
+		fmt.Println("Test Get string:", g)
 	}
-	fmt.Println("struct van json:", v)
-	fmt.Println()
-	s := map[string]string{}
-	err = settings.Load("testfile.yml", &s)
+	var i int
+	err = settings.Get("testfile.conf", "twee", &i)
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		fmt.Println("ERROR Get:", err)
+	} else {
+
+		fmt.Println("Test Get int:", i)
 	}
-	fmt.Println("map van yaml:", s)
 }
