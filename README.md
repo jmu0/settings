@@ -1,10 +1,10 @@
 # Settings
-Load: loads settings into struct or map
-environment variables overwrite settings in file
-command line args overwrite settings in file and environment variables
+- Load: loads settings into struct or map
+- environment variables overwrite settings in file
+- command line args overwrite settings in file and environment variables
 
 ## Read settings from file
-- .conf file (key value)
+- .conf file (format: key value)
 - .json file parse json
 - .yml file parse yaml
 
