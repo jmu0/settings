@@ -6,8 +6,14 @@ Load() loads settings from file (.conf, .json or .yml), overrides these settings
 - .yml file parse yaml
 
 ## Read settings from Environment variables
-Format: executable name in all caps, underscore, key in all caps (example: APP_SETTING)
+Format: executable name in all caps, underscore, key in all caps.
+    export APP_KEY=value
 
 ## Read settings from Command line args
-format: --key=value
+    `<app>` --key=value
 
+# Example
+    var s map[string]string
+
+    s = make(map[string]string)
+	settings.Load("settings.conf", &s)
